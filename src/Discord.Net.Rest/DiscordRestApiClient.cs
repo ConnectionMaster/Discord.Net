@@ -195,8 +195,8 @@ namespace Discord.API
             LoginState = LoginState.LoggedOut;
         }
 
-        internal virtual Task ConnectInternalAsync() => Task.Delay(0);
-        internal virtual Task DisconnectInternalAsync(Exception ex = null) => Task.Delay(0);
+        internal virtual Task ConnectInternalAsync() => Task.CompletedTask;
+        internal virtual Task DisconnectInternalAsync(Exception ex = null) => Task.CompletedTask;
         #endregion
 
         #region Core
@@ -790,6 +790,17 @@ namespace Discord.API
             var ids = new BucketIds(guildId: guildId);
             return SendAsync("DELETE", () => $"guilds/{guildId}/members/{userId}/roles/{roleId}", ids, options: options);
         }
+
+        public Task<API.Role> GetRoleAsync(ulong guildId, ulong roleId, RequestOptions options = null)
+        {
+            Preconditions.NotEqual(guildId, 0, nameof(guildId));
+            Preconditions.NotEqual(roleId, 0, nameof(roleId));
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds(guildId: guildId);
+            return SendAsync<API.Role>("GET", () => $"guilds/{guildId}/roles/{roleId}", ids, options: options);
+        }
+
         #endregion
 
         #region Channel Messages
@@ -1513,9 +1524,6 @@ namespace Discord.API
                 throw new ArgumentException("At least one of 'Content', 'Embeds', 'File' or 'Components' must be specified.", nameof(args));
             }
 
-            if (args.Content.IsSpecified && args.Content.Value is not null && args.Content.Value.Length > DiscordConfig.MaxMessageSize)
-                throw new ArgumentException(message: $"Message content is too long, length must be less or equal to {DiscordConfig.MaxMessageSize}.", paramName: nameof(args.Content));
-
             if (args.Content.IsSpecified && args.Content.Value?.Length > DiscordConfig.MaxMessageSize)
                 throw new ArgumentException(message: $"Message content is too long, length must be less or equal to {DiscordConfig.MaxMessageSize}.", paramName: nameof(args.Content));
 
@@ -1743,22 +1751,23 @@ namespace Discord.API
         /// <exception cref="ArgumentException">
         /// <paramref name="guildId"/> and <paramref name="userId"/> must not be equal to zero.
         /// -and-
-        /// <paramref name="args.DeleteMessageDays"/> must be between 0 to 7.
+        /// <paramref name="deleteMessageSeconds"/> must be between 0 and 604800.
         /// </exception>
-        /// <exception cref="ArgumentNullException"><paramref name="args"/> must not be <see langword="null"/>.</exception>
-        public Task CreateGuildBanAsync(ulong guildId, ulong userId, CreateGuildBanParams args, RequestOptions options = null)
+        public Task CreateGuildBanAsync(ulong guildId, ulong userId, uint deleteMessageSeconds, string reason, RequestOptions options = null)
         {
             Preconditions.NotEqual(guildId, 0, nameof(guildId));
             Preconditions.NotEqual(userId, 0, nameof(userId));
-            Preconditions.NotNull(args, nameof(args));
-            Preconditions.AtLeast(args.DeleteMessageDays, 0, nameof(args.DeleteMessageDays), "Prune length must be within [0, 7]");
-            Preconditions.AtMost(args.DeleteMessageDays, 7, nameof(args.DeleteMessageDays), "Prune length must be within [0, 7]");
+
+            Preconditions.AtMost(deleteMessageSeconds, 604800, nameof(deleteMessageSeconds), "Prune length must be within [0, 604800]");
+
+            var data = new CreateGuildBanParams { DeleteMessageSeconds = deleteMessageSeconds };
+
             options = RequestOptions.CreateOrClone(options);
 
             var ids = new BucketIds(guildId: guildId);
-            if (!string.IsNullOrWhiteSpace(args.Reason))
-                options.AuditLogReason = args.Reason;
-            return SendAsync("PUT", () => $"guilds/{guildId}/bans/{userId}?delete_message_days={args.DeleteMessageDays}", ids, options: options);
+            if (!string.IsNullOrWhiteSpace(reason))
+                options.AuditLogReason = reason;
+            return SendJsonAsync("PUT", () => $"guilds/{guildId}/bans/{userId}", data, ids, options: options);
         }
 
         /// <exception cref="ArgumentException"><paramref name="guildId"/> and <paramref name="userId"/> must not be equal to zero.</exception>
@@ -2037,6 +2046,18 @@ namespace Discord.API
             Expression<Func<string>> endpoint = () => $"guilds/{guildId}/members/search?limit={limit}&query={query}";
             return SendAsync<IReadOnlyCollection<GuildMember>>("GET", endpoint, ids, options: options);
         }
+
+        public async Task<GuildMemberSearchResponse> SearchGuildMembersAsyncV2(ulong guildId, SearchGuildMembersParamsV2 args, RequestOptions options = null)
+        {
+            Preconditions.NotEqual(guildId, 0, nameof(guildId));
+            options = RequestOptions.CreateOrClone(options);
+            
+            var ids = new BucketIds(guildId: guildId);
+            var response = await SendJsonAsync<GuildMemberSearchResponse>("POST", () => $"guilds/{guildId}/members-search", args, ids, options: options);
+
+            return response;
+        }
+
         #endregion
 
         #region Guild Roles
@@ -2092,7 +2113,7 @@ namespace Discord.API
         }
         #endregion
 
-        #region Guild emoji
+        #region Guild Emoji
         public Task<IReadOnlyCollection<Emoji>> GetGuildEmotesAsync(ulong guildId, RequestOptions options = null)
         {
             Preconditions.NotEqual(guildId, 0, nameof(guildId));
@@ -2704,14 +2725,14 @@ namespace Discord.API
                 int lastIndex = 0;
                 while (true)
                 {
-                    int leftIndex = format.IndexOf("{", lastIndex);
+                    int leftIndex = format.IndexOf('{', lastIndex);
                     if (leftIndex == -1 || leftIndex > endIndex)
                     {
                         builder.Append(format, lastIndex, endIndex - lastIndex);
                         break;
                     }
                     builder.Append(format, lastIndex, leftIndex - lastIndex);
-                    int rightIndex = format.IndexOf("}", leftIndex);
+                    int rightIndex = format.IndexOf('}', leftIndex);
 
                     int argId = int.Parse(format.Substring(leftIndex + 1, rightIndex - leftIndex - 1), NumberStyles.None, CultureInfo.InvariantCulture);
                     string fieldName = GetFieldName(methodArgs[argId + 1]);
@@ -2826,6 +2847,91 @@ namespace Discord.API
 
         public Task<SKU[]> ListSKUsAsync(RequestOptions options = null)
             => SendAsync<SKU[]>("GET", () => $"applications/{CurrentApplicationId}/skus", new BucketIds(), options: options);
+
+        public Task ConsumeEntitlementAsync(ulong entitlementId, RequestOptions options = null)
+            => SendAsync("POST", () => $"applications/{CurrentApplicationId}/entitlements/{entitlementId}/consume", new BucketIds(), options: options);
+
+        public Task<Subscription> GetSKUSubscriptionAsync(ulong skuId, ulong subscriptionId, RequestOptions options = null)
+            => SendAsync<Subscription>("GET", () => $"skus/{skuId}/subscriptions/{subscriptionId}", new BucketIds(), options: options);
+
+        public Task<Subscription[]> ListSKUSubscriptionsAsync(ulong skuId, ulong? before = null, ulong? after = null, int limit = 100, ulong? userId = null, RequestOptions options = null)
+        {
+            Preconditions.AtMost(100, limit, "Limit must be less or equal to 100.");
+            Preconditions.AtLeast(1, limit, "Limit must be greater or equal to 1.");
+
+            var args = $"?limit={limit}";
+            if (before is not null)
+                args += $"&before={before}";
+            if (after is not null)
+                args += $"&after={after}";
+            if (userId is not null)
+                args += $"&user_id={userId}";
+
+            return SendAsync<Subscription[]>("GET", () => $"skus/{skuId}/subscriptions{args}", new BucketIds(), options: options);
+        }
+        #endregion
+
+        #region Polls
+
+        public Task<PollAnswerVoters> GetPollAnswerVotersAsync(ulong channelId, ulong messageId, uint answerId, int limit = 100, ulong? afterId = null, RequestOptions options = null)
+        {
+            var urlParams = $"?limit={limit}{(afterId is not null ? $"&after={afterId}" : string.Empty)}";
+            return SendAsync<PollAnswerVoters>("GET", () => $"channels/{channelId}/polls/{messageId}/answers/{answerId}{urlParams}", new BucketIds(channelId: channelId), options: options);
+        }
+
+        public Task<Message> ExpirePollAsync(ulong channelId, ulong messageId, RequestOptions options = null)
+            => SendAsync<Message>("POST", () => $"channels/{channelId}/polls/{messageId}/expire", new BucketIds(channelId: channelId), options: options);
+
+        #endregion
+
+        #region App Emojis
+
+        public Task<Emoji> CreateApplicationEmoteAsync(CreateApplicationEmoteParams args, RequestOptions options = null)
+        {
+            Preconditions.NotNull(args, nameof(args));
+            Preconditions.NotNullOrWhitespace(args.Name, nameof(args.Name));
+            Preconditions.NotNull(args.Image.Stream, nameof(args.Image));
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds();
+            return SendJsonAsync<Emoji>("POST", () => $"applications/{CurrentApplicationId}/emojis", args, ids, options: options);
+        }
+
+        public Task<Emoji> ModifyApplicationEmoteAsync(ulong emoteId, ModifyApplicationEmoteParams args, RequestOptions options = null)
+        {
+            Preconditions.NotEqual(emoteId, 0, nameof(emoteId));
+            Preconditions.NotNull(args, nameof(args));
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds();
+            return SendJsonAsync<Emoji>("PATCH", () => $"applications/{CurrentApplicationId}/emojis/{emoteId}", args, ids, options: options);
+        }
+
+        public Task DeleteApplicationEmoteAsync(ulong emoteId, RequestOptions options = null)
+        {
+            Preconditions.NotEqual(emoteId, 0, nameof(emoteId));
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds();
+            return SendAsync("DELETE", () => $"applications/{CurrentApplicationId}/emojis/{emoteId}", ids, options: options);
+        }
+
+        public Task<Emoji> GetApplicationEmoteAsync(ulong emoteId, RequestOptions options = null)
+        {
+            Preconditions.NotEqual(emoteId, 0, nameof(emoteId));
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds();
+            return SendAsync<Emoji>("GET", () => $"applications/{CurrentApplicationId}/emojis/{emoteId}", ids, options: options);
+        }
+
+        public Task<ListApplicationEmojisResponse> GetApplicationEmotesAsync(RequestOptions options = null)
+        {
+            options = RequestOptions.CreateOrClone(options);
+
+            var ids = new BucketIds();
+            return SendAsync<ListApplicationEmojisResponse>("GET", () => $"applications/{CurrentApplicationId}/emojis", ids, options: options);
+        }
 
         #endregion
     }

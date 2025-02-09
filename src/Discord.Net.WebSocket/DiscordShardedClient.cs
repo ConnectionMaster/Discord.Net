@@ -428,7 +428,7 @@ namespace Discord.WebSocket
                     //Should only happen if token is changed
                     var _ = LogoutAsync(); //Signal the logout, fire and forget
                 }
-                return Task.Delay(0);
+                return Task.CompletedTask;
             };
 
             client.SentRequest += (method, endpoint, millis) => _sentRequest.InvokeAsync(method, endpoint, millis);
@@ -515,6 +515,11 @@ namespace Discord.WebSocket
             client.GuildScheduledEventUserAdd += (arg1, arg2) => _guildScheduledEventUserAdd.InvokeAsync(arg1, arg2);
             client.GuildScheduledEventUserRemove += (arg1, arg2) => _guildScheduledEventUserRemove.InvokeAsync(arg1, arg2);
 
+            client.AutoModActionExecuted += (guild, action, arg3) => _autoModActionExecuted.InvokeAsync(guild, action, arg3);
+            client.AutoModRuleCreated += rule => _autoModRuleCreated.InvokeAsync(rule);
+            client.AutoModRuleDeleted += rule => _autoModRuleDeleted.InvokeAsync(rule);
+            client.AutoModRuleUpdated += (arg1, arg2) => _autoModRuleUpdated.InvokeAsync(arg1, arg2);
+
             client.WebhooksUpdated += (arg1, arg2) => _webhooksUpdated.InvokeAsync(arg1, arg2);
             client.AuditLogCreated += (arg1, arg2) => _auditLogCreated.InvokeAsync(arg1, arg2);
 
@@ -523,6 +528,9 @@ namespace Discord.WebSocket
             client.EntitlementCreated += (arg1) => _entitlementCreated.InvokeAsync(arg1);
             client.EntitlementUpdated += (arg1, arg2) => _entitlementUpdated.InvokeAsync(arg1, arg2);
             client.EntitlementDeleted += (arg1) => _entitlementDeleted.InvokeAsync(arg1);
+
+            client.PollVoteAdded += (arg1, arg2, arg3, arg4, arg5) => _pollVoteAdded.InvokeAsync(arg1, arg2, arg3, arg4, arg5);
+            client.PollVoteRemoved += (arg1, arg2, arg3, arg4, arg5) => _pollVoteRemoved.InvokeAsync(arg1, arg2, arg3, arg4, arg5);
         }
 
         public async Task<SocketApplicationCommand> CreateGlobalApplicationCommandAsync(ApplicationCommandProperties properties, RequestOptions options = null)

@@ -96,6 +96,11 @@ namespace Discord
         int? ApproximateGuildCount { get; }
 
         /// <summary>
+        ///     Gets the approximate count of the users the application was added to. <see langword="null" /> if not returned.
+        /// </summary>
+        int? ApproximateUserInstallCount { get; }
+
+        /// <summary>
         ///     Gets the application's discoverability state.
         /// </summary>
         ApplicationDiscoverabilityState DiscoverabilityState { get; }
@@ -154,5 +159,10 @@ namespace Discord
         ///     Gets the application's verification state.
         /// </summary>
         ApplicationVerificationState VerificationState { get; }
+
+        /// <summary>
+        ///     Gets application install params configured for integration install types.
+        /// </summary>
+        IReadOnlyDictionary<ApplicationIntegrationType, ApplicationInstallParams> IntegrationTypesConfig { get; }
     }
 }

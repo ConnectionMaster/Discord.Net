@@ -6,8 +6,8 @@ namespace Discord.Rest;
 
 public class RestEntitlement : RestEntity<ulong>, IEntitlement
 {
-    /// <inheritdoc/>
-    public DateTimeOffset CreatedAt { get; private set; }
+    /// <inheritdoc />
+    public DateTimeOffset CreatedAt => SnowflakeUtils.FromSnowflake(Id);
 
     /// <inheritdoc/>
     public ulong SkuId { get; private set; }
@@ -55,10 +55,8 @@ public class RestEntitlement : RestEntity<ulong>, IEntitlement
             : null;
         ApplicationId = model.ApplicationId;
         Type = model.Type;
-        IsConsumed = model.IsConsumed;
-        StartsAt = model.StartsAt.IsSpecified
-            ? model.StartsAt.Value
-            : null;
+        IsConsumed = model.IsConsumed.GetValueOrDefault(false);
+        StartsAt = model.StartsAt;
         EndsAt = model.EndsAt.IsSpecified
             ? model.EndsAt.Value
             : null;

@@ -215,6 +215,7 @@ namespace Discord
         /// <returns>
         ///     A <see cref="IMessageInteraction"/> if the message is a response to an interaction; otherwise <see langword="null"/>.
         /// </returns>
+        [Obsolete("This property will be deprecated soon. Use IUserMessage.InteractionMetadata instead.")]
         IMessageInteraction Interaction { get; }
 
         /// <summary>
@@ -224,6 +225,16 @@ namespace Discord
         ///     A <see cref="MessageRoleSubscriptionData"/> if the message is a role subscription purchase message; otherwise <see langword="null"/>.
         /// </returns>
         MessageRoleSubscriptionData RoleSubscriptionData { get; }
+
+        /// <summary>
+        ///     Gets the purchase notification for this message.
+        /// </summary>
+        PurchaseNotification PurchaseNotification { get; }
+        
+        /// <summary>
+        ///     Gets the call data of the message.
+        /// </summary>
+        MessageCallData? CallData { get; }
 
         /// <summary>
         ///     Adds a reaction to this message.

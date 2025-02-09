@@ -1,5 +1,172 @@
 # Changelog
 
+## [3.17.0] - 2025-01-19
+
+### Added
+- #3056 Add IAutomodRule.MentionRaidProtectionEnabled (0e9caf3)
+- #3052 Added Header and Subtext to the Format class (0174745)
+
+### Fixed
+- #3057 Use 8.0.x dependencies for net6 support (50aa278)
+- #3049 `Task.Delay(0)` => `Task.CompletedTask` (b5f5df0)
+- #3014 An AddSlashCommand overload should be AddAutocompleteCommand in ModuleBuilder (35e8122)
+- #3053 `DiscordSocketClient.GetEntitlementsAsync` requiring unused `BaseDiscordClient` parameter (d828cd8)
+
+### Misc 
+- #3046 Refactor & update member search v2 (36439b6)
+
+
+## [3.17.0] - 2024-12-20
+
+### Added
+- #3025 Build with .NET 9 SDK (164a289)
+- #3032 Add `net8.0` and `net9.0` (d780d6c)
+- #3033 Add `net8.0` and `net9.0` to the metapackage (93229f6)
+
+- #3005 Add StickerId to REST and WebSocket Sticker audit log data classes (8a2ea4b)
+- #3023 Scheduled event recurrence rule (b7208d4)
+- #3024 Support sending voice messages (5904ecd)
+- #3036 Support for multiple subscription tiers (79fade6)
+- #3017 Add support for keyed services. (3017f6b)
+  
+### Fixed
+- #2974 rest client add webporxy config, keep the processing logic with WebSocketProvider (292f8c4)
+- #3008 fix webhook ctor (433bdc2)
+- #3015 Fixes incorrect cast of parameters in CommandBuilder (aaa8df9)
+- #3028 Create a new scope when building interaction service modules if `AutoServiceScopes = true` (a1e50c4)
+- #3035 NRE in message commands in user app contexts (c78296f)
+- #3034 Entitlements `starts_at` is nullable (d5879c8)
+- #3031 Interaction Service failing to create scopes with some DI providers (a884ad1)
+- #3030 NRE on thread member creation without a guild user in the payload (96a8327)
+
+### Misc
+- #3021 Expose channel type property on `IChannel` (8b92969)
+- #3006 Add missing permissions (6b92cc2)
+- #3007 Allow setting SuppressNotification in webhook client (682d87e)
+- #3027 Eliminate the waste of checking arguments under the same conditions. (f644e68)
+- #3037 add missing overwrite perms (d2d8d73)
+- #3038 Clamp cache size (438e31e)
+
+
+## [3.16.0] - 2024-09-14
+
+### Added
+- #2918 Message Forwards (c4d90cd)
+- #2976 New interactions precondition attribute that supports app commands (1f252a3)
+- #2978 Add Application Approximate User Install Count (47f98bc)
+- #2987 Add guild profile banners (57eb906)
+- #3002 Add subscriptions support (88ea2ed)
+- #2994 Add more member flags (9b8c7b1)
+- #2989 Add GetRoleAsync (466b491)
+- #2986 Add StickFormat gif and animated guild icon (2aaa0fd)
+
+### Fixed
+- #3001 StackOverflow in sharded clients (c53aac3)
+  
+### Misc
+- #2979 Create a (Discord)Color using a string (bc84b94)
+- #2991 Minor optimization + make sure top level components are action rows (623a457)
+- #2995 Use interaction method in `InteractionModuleBase.DeleteOriginalResponse` (f65d3ad)
+- #2999 Option to dump gw payloads on errors (b87ec6e)
+  
+
+## [3.15.3] - 2024-07-21
+
+### Added
+- #2963 Application Emojis (26bb789)
+- [EXPERIMENTAL] #2931 Member search v2 (e18915a)
+- #2952 add `IsAvailable` to `GuildEmote` (cb79f04)
+- #2965 Add team member `Role` property (6e531a2)
+
+### Fixed
+- #2958 crash when poll is null in RestMessageComponent (24c7605)
+- #2962 incomplete validation when ChannelFlags.RequireTag is true (f5fdfb2)
+- #2948 Fix IndexOf bug in CreateBucketId (ec0ba49)
+- #2959 Fix automod related events in the sharded client (8b6be64)
+- #2966 Fix `CustomSticker.DeleteAsync()` (359f6db)
+
+### Misc
+- #2951 Update for the breaking change discord has made + v3 is cringe (8afea2c)
+- #2953 longer polls (ae49794)
+- #2956 Add missing role tags (6b691b1)
+- #2957 Longer MaxCustomBlockMessageLength (bae7861)
+
+
+## [3.15.2] - 2024-06-18
+### Hotfix
+- fix `AutocompleteAttribute` with empty constructor
+- fix `Emote` constructor related issues
+
+## [3.15.1] - 2024-06-18
+### Added
+- #2927 Add missing PollProperties (a59f4ba)
+- #2942 Add purchase notification (9d92435)
+- #2934 Add MessageCallData (21195a8)
+- #2932 Config Bypass for CanSendResponse (9030a5b)
+- #2933 Premium Buttons (531b5eb)
+- #2941 Add UseExternalApps permission (f7f29d5)
+### Misc
+- #2936 Public constructor for Emote (3be72a8)
+- #2935 Generic autocomplete (35b102a)
+- #2929 Enable nuget debug symbols. (aa424f6)
+
+## [3.15.0] - 2024-05-12
+### Added
+- #2902 Polls (476ec06)
+- #2898 Guild bans with seconds prune period (d1da2a0)
+- #2903 Create `RequireTeamAttribute` (753724d)
+- #2906 Create `DoHierarchyCheckAttribute` (1a5cba8)
+- #2923 Create `RequireRoleAttribute` (5dadcb2)
+- #2919 More store stuff (f9086d3)
+- #2920 Add `SocketInteraction.InteractionChannel` (3054505)
+
+### Fixed
+- #2910 RestDMChannel relies on recipient (13ea566)
+- #2911 Don't rely on Guild for id (397a887)
+- #2912 Don't depend on WebSocket for Interaction service (a2f624e)
+- #2922 NRE with rest interactions & no api call (again) (83fdc89) 
+- #2924 Fix null error when using a `SelectMenuBuilder` constructor (93cb71a)
+
+### Misc
+- #2905 Remove analyzer project & resolve some build warnings (7aab366)
+- #2913 Replace generic exceptions. (54d2fe5)
+- #2908 Support options in Rest's AddRoleAsync (b70e21b)
+- #2914 `.Distinct()` roles(ids) in `IGuildUser.ModifyAsync` (27a0785)
+- #2915 Improve bulk bans (f85bf9a)
+
+
+## [3.14.1] - 2024-03-19
+### Fixed
+- Version number contains commit hash
+
+## [3.14.0] - 2024-03-19
+
+### Added
+- #2849 Allow setting channel topic to null when creating channels (7c96844)
+- #2832 Add Icon size parameter to `GetGuildIconUrl` CDN method (eb5678a)
+- #2883 Initial user apps support (24a6978)
+- #2881 Bulk ban support (03402cd)
+- #2880 More banner support (4efe3be)
+- #2858 Allow setting custom status with `SetGameAsync` (ee386b1)
+- #2870 SentRequest event (fc2fc87)
+- #2873 Voice reconnection and resuming (09680c5)
+- #2879 Support setting banner on bot profiles (d0c0a56)
+
+### Fixed
+- #2866 Allow switching voice channels without disconnecting (external clients only) (5a62ba1)
+- #2857 Receiving voice packets (use system-assigned port) (1a16f4d)
+- #2850 NRE in automod audit logs (1eb7a53)
+- #2862 Fixed a bug when creating a `SelectMenuBuilder` from a `SelectMenuComponent` incorrectly set the `CustomId` (6870ac5)
+- Incorrect ConnectionState of a DiscordSocketClient casted to IDiscordClient/BaseSocketClient (955fae0)
+- #2867 `InteractionService.AddModulesXAsync` command duplication (2787db3)
+
+### Misc
+- #2806 Update library dependencies (bfc8dc2)
+- #2847 Remove some redundant notes & small updates (d0e9c8b)
+- #2854 Refactor `MaxBitrate` and `UploadLimit` in `GuildHelper` (6256de4)
+- #2869 Fix optional param being non-optional (fa51f0a)
+
+
 ## [3.13.1] - 2024-02-11
 
 ### Added

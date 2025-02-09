@@ -45,6 +45,7 @@ namespace Discord.Rest
         public TokenType TokenType => ApiClient.AuthTokenType;
         internal bool UseInteractionSnowflakeDate { get; private set; }
         internal bool FormatUsersInBidirectionalUnicode { get; private set; }
+        internal bool ResponseInternalTimeCheck { get; private set; }
 
         /// <summary> Creates a new REST-only Discord client. </summary>
         internal BaseDiscordClient(DiscordRestConfig config, API.DiscordRestApiClient client)
@@ -59,6 +60,7 @@ namespace Discord.Rest
 
             UseInteractionSnowflakeDate = config.UseInteractionSnowflakeDate;
             FormatUsersInBidirectionalUnicode = config.FormatUsersInBidirectionalUnicode;
+            ResponseInternalTimeCheck = config.ResponseInternalTimeCheck;
 
             ApiClient.RequestQueue.RateLimitTriggered += async (id, info, endpoint) =>
             {
@@ -122,7 +124,7 @@ namespace Discord.Rest
             await _loggedInEvent.InvokeAsync().ConfigureAwait(false);
         }
         internal virtual Task OnLoginAsync(TokenType tokenType, string token)
-            => Task.Delay(0);
+            => Task.CompletedTask;
 
         public async Task LogoutAsync()
         {
@@ -148,7 +150,7 @@ namespace Discord.Rest
             await _loggedOutEvent.InvokeAsync().ConfigureAwait(false);
         }
         internal virtual Task OnLogoutAsync()
-            => Task.Delay(0);
+            => Task.CompletedTask;
 
         internal virtual void Dispose(bool disposing)
         {
@@ -264,10 +266,10 @@ namespace Discord.Rest
 
         /// <inheritdoc />
         Task IDiscordClient.StartAsync()
-            => Task.Delay(0);
+            => Task.CompletedTask;
         /// <inheritdoc />
         Task IDiscordClient.StopAsync()
-            => Task.Delay(0);
+            => Task.CompletedTask;
 
         /// <summary>
         ///     Creates a test entitlement to a given SKU for a given guild or user.
@@ -284,13 +286,45 @@ namespace Discord.Rest
         /// <summary>
         ///     Returns all entitlements for a given app.
         /// </summary>
-        IAsyncEnumerable<IReadOnlyCollection<IEntitlement>> IDiscordClient.GetEntitlementsAsync(int? limit, ulong? afterId, ulong? beforeId,
+        IAsyncEnumerable<IReadOnlyCollection<IEntitlement>> IDiscordClient.GetEntitlementsAsync(int limit, ulong? afterId, ulong? beforeId,
             bool excludeEnded, ulong? guildId, ulong? userId, ulong[] skuIds, RequestOptions options) => AsyncEnumerable.Empty<IReadOnlyCollection<IEntitlement>>();
 
         /// <summary>
         ///     Gets all SKUs for a given application.
         /// </summary>
         Task<IReadOnlyCollection<SKU>> IDiscordClient.GetSKUsAsync(RequestOptions options) => Task.FromResult<IReadOnlyCollection<SKU>>(Array.Empty<SKU>());
+
+        /// <summary>
+        ///     Marks a given one-time purchase entitlement for the user as consumed.
+        /// </summary>
+        Task IDiscordClient.ConsumeEntitlementAsync(ulong entitlementId, RequestOptions options) => Task.CompletedTask;
+
+        /// <summary>
+        ///     Returns all subscriptions for a given SKU. 
+        /// </summary>
+        IAsyncEnumerable<IReadOnlyCollection<ISubscription>> IDiscordClient.GetSKUSubscriptionsAsync(ulong skuId, int limit, ulong? afterId,
+            ulong? beforeId, ulong? userId, RequestOptions options) => AsyncEnumerable.Empty<IReadOnlyCollection<ISubscription>>();
+
+        /// <summary>
+        ///     Gets a subscription by its id.
+        /// </summary>
+        Task<ISubscription> IDiscordClient.GetSKUSubscriptionAsync(ulong skuId, ulong subscriptionId, RequestOptions options) => Task.FromResult<ISubscription>(null);
+
+
+        /// <inheritdoc />
+        Task<Emote> IDiscordClient.GetApplicationEmoteAsync(ulong emoteId, RequestOptions options) => Task.FromResult<Emote>(null);
+
+        /// <inheritdoc />
+        Task<IReadOnlyCollection<Emote>> IDiscordClient.GetApplicationEmotesAsync(RequestOptions options) => Task.FromResult<IReadOnlyCollection<Emote>>(ImmutableArray.Create<Emote>());
+
+        /// <inheritdoc />
+        Task<Emote> IDiscordClient.ModifyApplicationEmoteAsync(ulong emoteId, Action<ApplicationEmoteProperties> args, RequestOptions options) => Task.FromResult<Emote>(null);
+
+        /// <inheritdoc />
+        Task<Emote> IDiscordClient.CreateApplicationEmoteAsync(string name, Image image, RequestOptions options) => Task.FromResult<Emote>(null);
+
+        /// <inheritdoc />
+        Task IDiscordClient.DeleteApplicationEmoteAsync(ulong emoteId, RequestOptions options) => Task.CompletedTask;
 
         #endregion
     }

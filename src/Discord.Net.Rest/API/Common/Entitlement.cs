@@ -24,11 +24,11 @@ internal class Entitlement
     public EntitlementType Type { get; set; }
 
     [JsonProperty("consumed")]
-    public bool IsConsumed { get; set; }
+    public Optional<bool> IsConsumed { get; set; }
 
     [JsonProperty("starts_at")]
-    public Optional<DateTimeOffset> StartsAt { get; set; }
+    public DateTimeOffset? StartsAt { get; set; }
 
     [JsonProperty("ends_at")]
-    public Optional<DateTimeOffset> EndsAt { get; set; }
+    public Optional<DateTimeOffset?> EndsAt { get; set; }
 }
